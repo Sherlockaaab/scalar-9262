@@ -1,0 +1,390 @@
+{
+  "$schema": "./node_modules/knip/schema.json",
+  // Catalog entries from ignored workspaces are falsely reported as unused
+  "exclude": ["catalog"],
+  "ignoreWorkspaces": [
+    // Allows a progressive adoption
+    "examples/nestjs/**",
+    "examples/nextjs-api-reference/**",
+    "examples/react/**",
+    "examples/react-webpack/**",
+    "examples/ssg/**",
+    "examples/vue-ssr/**",
+    "examples/sveltekit/**",
+    "examples/web/**",
+    "projects/proxy-scalar-com/**"
+  ],
+  "ignoreFiles": [
+    // CSS files imported via @import or Vue components — knip cannot trace CSS imports
+    "**/*.css",
+    // Referenced in scalar.config.json
+    "documentation/assets/landing.js",
+    "documentation/assets/fathom.js"
+  ],
+  "ignore": [
+    // We will use this in the future, just removed it from the workspace store for now
+    "packages/workspace-store/src/schemas/reference-config/index.ts",
+    // Generated migration types — exports are used by downstream consumers
+    "packages/oas-utils/src/migrations/*/types.generated.ts"
+  ],
+  "ignoreDependencies": [
+    // Used by `ci.yml` `npm-publish` job
+    "@changesets/cli",
+    // Used by `.changeset/config.json`
+    "@scalar-internal/changelog-generator",
+    // Required on root to have proper format with prettier
+    "tailwindcss",
+    // Used as vitest environment in test files via @vitest-environment jsdom
+    "jsdom",
+    // The following values needs to be re-checked once more packages are included
+    "tsconfig-paths",
+    "typescript-language-server"
+  ],
+  "ignoreBinaries": ["netlify"],
+  "ignoreIssues": {
+    "integrations/docusaurus/src/ScalarDocusaurus.tsx": ["duplicates"],
+    // TrieNode is exported for potential external use
+    "packages/json-magic/src/diff/trie.ts": ["exports"],
+    // Astro component Props interface is used by the framework
+    "integrations/astro/src/ScalarComponent.astro": ["types"],
+    // setupFiles string path cannot be resolved by knip
+    "packages/api-reference/vitest.config.ts": ["unresolved"]
+  },
+  "workspaces": {
+    "packages/api-client": {
+      "entry": [
+        "src/index.ts",
+        "src/components/index.ts",
+        "src/components/CodeInput/index.ts",
+        "src/components/CommandPalette/index.ts",
+        "src/components/DataTable/index.ts",
+        "src/components/HttpMethod/index.ts",
+        "src/components/ImportCollection/index.ts",
+        "src/components/Server/index.ts",
+        "src/components/Sidebar/index.ts",
+        "src/components/ViewLayout/index.ts",
+        "src/hooks/index.ts",
+        "src/layouts/App/index.ts",
+        "src/layouts/Modal/index.ts",
+        "src/layouts/Web/index.ts",
+        "src/libs/index.ts",
+        "src/libs/importers/index.ts",
+        "src/libs/send-request/index.ts",
+        "src/plugins/index.ts",
+        "src/store/index.ts",
+        "src/types/index.ts",
+        "src/v2/blocks/operation-block/index.ts",
+        "src/v2/blocks/operation-code-sample/index.ts",
+        "src/v2/blocks/request-block/index.ts",
+        "src/v2/blocks/response-block/index.ts",
+        "src/v2/blocks/scalar-address-bar-block/index.ts",
+        "src/v2/blocks/scalar-auth-selector-block/index.ts",
+        "src/v2/components/code-input/index.ts",
+        "src/v2/components/data-table/index.ts",
+        "src/v2/components/forms/index.ts",
+        "src/v2/components/layout/index.ts",
+        "src/v2/components/modals/index.ts",
+        "src/v2/components/resize/index.ts",
+        "src/v2/components/server/index.ts",
+        "src/v2/components/sidebar/index.ts",
+        "src/v2/features/app/index.ts",
+        "src/v2/features/app/components/index.ts",
+        "src/v2/features/environments/index.ts",
+        "src/v2/features/global-cookies/index.ts",
+        "src/v2/features/modal/index.ts",
+        "src/v2/features/operation/index.ts",
+        "src/v2/features/search/index.ts",
+        "src/v2/features/settings/index.ts",
+        "src/v2/helpers/index.ts",
+        "src/views/Components/CodeSnippet/index.ts",
+        "src/views/Request/components/index.ts",
+        "src/views/Request/consts/index.ts",
+        "src/views/Request/libs/index.ts",
+        "src/views/Request/RequestSection/index.ts",
+        "src/views/Request/RequestSection/RequestAuth/index.ts",
+        "src/views/Request/ResponseSection/index.ts",
+        "src/views/Request/types/index.ts",
+        "src/v2/features/command-palette/index.ts",
+        //
+        "playground/{app,modal,web}/main.ts",
+        "playground/v2/{app,modal,web}/main.ts",
+        "playground/v2/test/index.ts"
+      ],
+      "ignoreFiles": [
+        "src/views/Cookies/CookieRaw.vue" // Untested and disabled for now.
+      ]
+    },
+    "packages/api-client-react": {
+      "entry": ["src/index.ts", "playground/main.tsx"]
+    },
+    "packages/agent-chat": {
+      "ignore": ["playground/**", "src/entities/**"],
+      "ignoreDependencies": ["@scalar/themes", "hono"]
+    },
+    "packages/api-reference": {
+      "entry": [
+        "src/index.ts",
+        "src/ssr.ts",
+        "src/components/index.ts",
+        "src/blocks/index.ts",
+        "src/hooks/index.ts",
+        "src/plugins/index.ts",
+        "src/features/index.ts",
+        "src/helpers/index.ts",
+        "src/esm.ts",
+        "src/standalone.bench.ts",
+        "src/vitest.setup.ts",
+        // Not sure why test files are marked as unused here
+        "test/**/*",
+        "src/**/*.test.ts",
+        "playground/components/src/main.ts",
+        "playground/vue/src/main.ts"
+      ],
+      "ignoreDependencies": [
+        // Used by my-custom-plugin inside playground/vue but code is commented
+        "react",
+        "@scalar/react-renderer"
+      ],
+      "ignoreFiles": ["playground/vue/src/x-custom-extension-plugin/components/CustomReactComponent.tsx"]
+    },
+    "packages/api-reference-react": {
+      "entry": ["src/index.ts", "playground/main.tsx"],
+      "ignoreDependencies": [
+        "vue" // peer dep referenced in shims.d.ts
+      ]
+    },
+    "packages/build-tooling": {
+      "entry": ["src/index.ts", "src/esbuild/index.ts", "src/vite/index.ts"]
+    },
+    "packages/code-highlight": {
+      "entry": [
+        "src/index.ts",
+        "src/code/index.ts",
+        "src/languages/index.ts",
+        "src/markdown/index.ts",
+        "src/rehype-alert/index.ts",
+        "src/rehype-highlight/index.ts"
+      ]
+    },
+    "packages/components": {
+      "entry": [
+        "src/index.ts",
+        // Not sure why test files are marked as unused here
+        "test/**/*",
+        "src/**/*.test.ts"
+      ],
+      "ignoreFiles": ["src/components/ScalarIcon/.svglintrc.js"]
+    },
+    "packages/core": {
+      "entry": ["src/libs/html-rendering/index.ts"]
+    },
+    "packages/draggable": {
+      "entry": ["src/index.ts"]
+    },
+    "packages/helpers": {
+      "entry": ["src/*/*.ts", "!src/*/*.test.ts"]
+    },
+    "packages/icons": {
+      "ignoreFiles": ["src/library/.svglintrc.js"],
+      "entry": ["src/index.ts", "src/types.ts", "src/library/index.ts"]
+    },
+    "packages/json-magic": {
+      "entry": [
+        "src/bundle/index.ts",
+        "src/magic-proxy/index.ts",
+        "src/diff/index.ts",
+        "src/dereference/index.ts",
+        "src/bundle/plugins/node.ts",
+        "src/bundle/plugins/browser.ts",
+        "src/helpers/escape-json-pointer.ts"
+      ]
+    },
+    "packages/nextjs-openapi": {
+      "entry": ["src/index.ts", "playground/app/api/**/*.ts"],
+      "ignoreFiles": ["playground/next.config.js"]
+    },
+    "packages/oas-utils": {
+      "entry": [
+        "src/entities/*/index.ts",
+        "src/helpers/index.ts",
+        "src/helpers/security/index.ts",
+        "src/migrations/index.ts",
+        "src/spec-getters/index.ts",
+        "src/transforms/index.ts"
+      ]
+    },
+    "packages/object-utils": {
+      "entry": ["src/*/index.ts"]
+    },
+    "packages/openapi-parser": {
+      "entry": [
+        //
+        "src/index.ts",
+        "src/plugins/fetch-urls/index.ts",
+        "src/plugins/read-files/index.ts"
+      ]
+    },
+    "packages/openapi-types": {
+      "entry": [
+        //
+        "src/index.ts",
+        "src/helpers/index.ts",
+        "src/schemas/extensions/index.ts",
+        "src/schemas/3.1/*/index.ts"
+      ]
+    },
+    "packages/sidebar": {
+      "entry": [
+        "src/index.ts",
+        //
+        "playground/main.ts"
+      ]
+    },
+    "packages/snippetz": {
+      "entry": ["src/index.ts", "src/clients/index.ts", "src/plugins/*/*/index.ts", "src/utils/index.ts"]
+    },
+    "packages/ts-to-openapi": {
+      "entry": ["src/index.ts"],
+      "ignoreFiles": ["test/fixtures/*"]
+    },
+    "packages/types": {
+      "entry": [
+        "src/index.ts",
+        "src/api-reference/index.ts",
+        "src/entities/index.ts",
+        "src/legacy/index.ts",
+        "src/snippetz/index.ts",
+        "src/utils/index.ts"
+      ]
+    },
+    "packages/use-codemirror": {
+      "entry": ["src/index.ts", "src/themes/index.ts"]
+    },
+    "packages/use-hooks": {
+      "entry": [
+        "src/useBindCx/index.ts",
+        "src/useBreakpoints/index.ts",
+        "src/useClipboard/index.ts",
+        "src/useColorMode/index.ts"
+      ]
+    },
+    "packages/workspace-store": {
+      "entry": [
+        "./src/client.ts",
+        "./src/events/index.ts",
+        "./src/entities/auth/index.ts",
+        "./src/helpers/*.ts",
+        "./src/mutators/index.ts",
+        "./src/navigation/index.ts",
+        "./src/persistence/index.ts",
+        "./src/plugins/bundler/index.ts",
+        "./src/plugins/client/index.ts",
+        "./src/schemas.ts",
+        "./src/schemas/*.ts",
+        "./src/schemas/extensions/operation/index.ts",
+        "./src/schemas/extensions/tag/index.ts",
+        "./src/schemas/extensions/workspace/index.ts",
+        "./src/schemas/extensions/security/index.ts",
+        "./src/schemas/v3.1/strict/openapi-document.ts",
+        "./src/schemas/v3.1/strict/type-guards.ts",
+        "./src/server.ts",
+        "./src/resolve.ts"
+      ]
+    },
+    "integrations/django-ninja": {
+      "ignoreBinaries": ["python"]
+    },
+    "integrations/docker": {
+      "ignoreDependencies": [
+        "@scalar/api-reference" // uses standalone.js during docker build
+      ]
+    },
+    "integrations/docusaurus": {
+      "docusaurus": {
+        "config": ["playground/docusaurus.config.ts"],
+        "entry": [
+          "playground/sidebars.ts",
+          "playground/src/{pages,components}/**/*.tsx",
+          "playground/{blog,docs}/**/*.mdx",
+          "playground/versioned_docs/**/*.{mdx,jsx,tsx}",
+          // Referenced by src/index.ts `addRoute`
+          "src/ScalarDocusaurus.tsx"
+        ]
+      },
+      "typescript": {
+        "config": ["tsconfig.json", "tsconfig.build.json", "playground/tsconfig.json"]
+      },
+      "ignoreFiles": ["playground/.docusaurus/**"],
+      "ignoreDependencies": [
+        // Used by webpack
+        "path",
+        // Docusaurus aliases
+        "@theme/*",
+        "@site/*"
+      ]
+    },
+    "integrations/dotnet/aspire": {
+      "ignoreDependencies": [
+        // Included to increment the version in alignment with the packages listed below
+        "@scalar/api-reference",
+        "@scalar/dotnet-shared"
+      ]
+    },
+    "integrations/dotnet/aspnetcore": {
+      "entry": ["playground/Scalar.AspNetCore.Playground/wwwroot/scalar/config.js"],
+      "ignoreDependencies": [
+        // Included to increment the version in alignment with the packages listed below.
+        "@scalar/api-reference",
+        "@scalar/dotnet-shared"
+      ]
+    },
+    "integrations/dotnet/shared": {
+      "ignoreDependencies": [
+        // Included for convenience.
+        // Java enums are dynamically generated from the snippetz package.
+        // Having snippetz as a dependency ensures they are regenerated whenever clients or targets change.
+        "@scalar/snippetz"
+      ]
+    },
+    "integrations/fastapi": {
+      "ignoreBinaries": ["python", "uvicorn"]
+    },
+    "integrations/fastify": {
+      "ignoreDependencies": [
+        "@scalar/api-reference" // build step copy standalone file from this package
+      ]
+    },
+    "integrations/java": {
+      "ignoreDependencies": [
+        "@scalar/api-reference", // build step copy standalone file from this package
+        // Included for convenience.
+        // Java enums are dynamically generated from the snippetz package.
+        // Having snippetz as a dependency ensures they are regenerated whenever clients or targets change.
+        "@scalar/snippetz"
+      ],
+      "ignoreBinaries": ["mvn"]
+    },
+    "integrations/nestjs": {},
+    "integrations/nextjs": {},
+    "integrations/nuxt": {
+      "entry": [
+        "src/module.ts",
+        "src/runtime/components/ScalarApiReference.vue",
+        "src/runtime/pages/ScalarPage.vue",
+        "playground/nuxt.config.ts",
+        "playground/layouts/default.vue",
+        "playground/pages/index.vue"
+      ],
+      "ignoreDependencies": [
+        "@scalar/api-client" // referenced in /src/runtime/components/nuxt-theme.css
+      ]
+    },
+    "integrations/sveltekit": {
+      "ignoreDependencies": [
+        // Automatically added to devDependencies by `pnpm script packages format`
+        // because it's a peer dependency but not used directly.
+        "@sveltejs/kit"
+      ]
+    }
+  }
+}

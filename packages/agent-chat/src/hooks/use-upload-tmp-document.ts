@@ -1,0 +1,140 @@
+import { redirectToProxy } from '@scalar/helpers/url/redirect-to-proxy'
+import { ref } from 'vue'
+import { z } from 'zod/mini'
+
+import { useState } from '@/state/state'
+
+const SHOW_UPLOAD_SUCCESS_DELAY = 5_000 // 5 seconds
+
+export type UploadTmpDocumentState =
+  | { type: 'error'; error: unknown }
+  | { type: 'uploading' }
+  | { type: 'processing' }
+  | { type: 'loading' }
+  | { type: 'done' }
+
+const TMP_DOC_LS_KEY = 'scalar-tmp-doc'
+
+function saveTmpDocumentInLocalStorage({ namespace, slug }: { namespace: string; slug: string }) {
+  localStorage.setItem(TMP_DOC_LS_KEY, JSON.stringify({ namespace, slug }))
+}
+
+export function getTmpDocFromLocalStorage() {
+  const tmpDoc = localStorage.getItem(TMP_DOC_LS_KEY)
+  if (!tmpDoc) {
+    return
+  }
+
+  return z
+    .object({
+      namespace: z.string(),
+      slug: z.string(),
+    })
+    .parse(JSON.parse(tmpDoc))
+}
+
+export function removeTmpDocFromLocalStorage() {
+  const tmpDoc = localStorage.getItem(TMP_DOC_LS_KEY)
+  if (!tmpDoc) {
+    return
+  }
+
+  localStorage.removeItem(TMP_DOC_LS_KEY)
+}
+
+/**
+ * Handle uploading a temporary OpenAPI document.
+ */
+export function useUploadTmpDocument() {
+  const state = useState()
+  const uploadState = ref<UploadTmpDocumentState>()
+
+  function createUrl(path: string) {
+    const fullUrl = `${state.baseUrl}${path}`
+    return redirectToProxy(state.proxyUrl.value, fullUrl)
+  }
+
+  async function uploadTempDocument(document: string, isAgent = false) {
+    try {
+      uploadState.value = {
+        type: 'uploading',
+      }
+
+      const response = await fetch(createUrl(`/core/share/upload/apis${isAgent ? '?source=agent' : ''}`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ document }),
+      })
+
+      if (!response.ok) {
+        uploadState.value = {
+          type: 'error',
+          error: 'Failed to upload your OpenAPI document.',
+        }
+
+        return
+      }
+
+      const json = await response.json()
+
+      const { success, data } = z.object({ url: z.string(), namespace: z.string(), slug: z.string() }).safeParse(json)
+
+      if (!success) {
+        uploadState.value = {
+          type: 'error',
+          error: 'Failed to process document.',
+        }
+        return
+      }
+
+      uploadState.value = {
+        type: 'processing',
+      }
+      const embeddingStatusResponse = await fetch(
+        createUrl(`/vector/registry/embeddings/${data.namespace}/${data.slug}`),
+        {
+          method: 'GET',
+        },
+      )
+
+      saveTmpDocumentInLocalStorage({
+        namespace: data.namespace,
+        slug: data.slug,
+      })
+
+      await state.addDocument({
+        namespace: data.namespace,
+        slug: data.slug,
+        removable: false,
+        tmp: true,
+      })
+
+      if (!embeddingStatusResponse.ok) {
+        uploadState.value = {
+          type: 'error',
+          error: 'Failed to embed document.',
+        }
+        return
+      }
+
+      uploadState.value = { type: 'done' }
+      state.uploadedTmpDocumentUrl.value = data.url
+
+      setTimeout(() => {
+        uploadState.value = undefined
+      }, SHOW_UPLOAD_SUCCESS_DELAY)
+
+      return data
+    } catch {
+      uploadState.value = { type: 'error', error: 'Failed to upload your OpenAPI document.' }
+      return
+    }
+  }
+
+  return {
+    uploadTempDocument,
+    uploadState,
+  }
+}
